@@ -1,0 +1,123 @@
+import java.io.PrintWriter
+import java.io.File
+import scala.collection.mutable.ListBuffer
+
+object Sheet {
+  def make(parameters: Map[String, String]) {
+    val sheetNumber = parameters("-n")
+    val dueDate = parameters("-d")
+    val exercises = parameters("-e").split(",")
+    // construct sheet
+    val sheet = new Sheet(sheetNumber, dueDate)
+    var exerciseNumbers = for (e <- exercises) sheet.addAssignment(e)
+    // print
+    sheet.write
+  }
+} 
+  
+/**
+ * the model for an assignment sheet
+ */
+class Sheet(sheetNumber: String, dueDate: String) {
+  def preamble_(sheetNumber: String, dueDate: String, courseName: String, semester: String, tutor: String, students: Seq[String]): String = {
+
+    val source = scala.io.Source.fromFile("file.txt")
+    val lines = source.mkString
+    source.close()
+
+    lines.replace("#TUTOR#", tutor)
+    lines.replace("#DUEDATE#", dueDate)
+    lines.replace("#COURSE#", courseName)
+    lines.replace("#SEMESTER#", semester)
+    lines.replace("#ASSIGNMENT#", sheetNumber)
+    lines.replace("#STUDENTS#", students.mkString("\\\\"))
+  }
+
+  def preamble(sheetNumber: String, dueDate: String, courseName: String, semester: String, tutor: String, students: Seq[String]): String =
+    "\\documentclass[a4paper,10pt, halfparskip]{scrartcl}" + "\n" +
+      "\\usepackage[utf8]{inputenc}" + "\n" +
+      "\\usepackage[ngerman]{babel}" + "\n" +
+      "\\usepackage{tikz}" + "\n" +
+      "\\usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,positioning,fit,petri}" + "\n" +
+      "\\usepackage{amsmath}" + "\n" +
+      "\\usepackage{amssymb}" + "\n" +
+      "\\usepackage{array}" + "\n" +
+      "\\usepackage{color}" + "\n" +
+      "\\usepackage{enumerate}" + "\n" +
+      "\\usepackage{fancyhdr}" + "\n" +
+      "\\usepackage{listings}" + "\n" +
+      "\\usepackage[margin=0.7in]{geometry}" + "\n" +
+      " " + "\n" +
+      "\\pagestyle{fancy}" + "\n" +
+      "" + "\n" +
+      "\\makeatletter" + "\n" +
+      "\\setlength{\\headheight}{55pt}" + "\n" +
+      "\\lhead[]{\\Large{\\textbf{\\@title}}\\\\\\large{" + tutor + "\\\\\\@date}}" + "\n" +
+      "\\rhead[]{\\large{\\@author}}" + "\n" +
+      "\\makeatother" + "\n" +
+      "" + "\n" +
+      "\\author{" + students.mkString("\\\\") + "}" + "\n" +
+      "\\date{" + dueDate + "}" + "\n" +
+      "\\title{" + courseName + " " + semester + " " + sheetNumber + ". Übungszettel}" + "\n" +
+      "" + "\n" +
+      "\\begin{document}" + "\n" +
+      "\\lstset{frame=single}" + "\n" +
+      "\\lstset{breaklines=true}" + "\n" +
+      "\\lstset{keywordstyle=\\color{purple}\\bf}" + "\n" +
+      "\\lstset{commentstyle=\\color{gray}}" + "\n" +
+      "\\lstset{stringstyle=\\color{blue}}" + "\n" +
+      "\\lstset{numbers=left}" + "\n" +
+      "\\lstset{showspaces=false}" + "\n" +
+      "\\lstset{showstringspaces=false}" + "\n" +
+      "" + "\n" +
+      "\\newcommand{\\OPT}[1]{\\mathrm{OPT}(#1)}" + "\n" +
+      "" + "\n"
+  //exercises
+  val endDocument = " \\end{document}"
+
+  // create sheet directory
+  val dirLocation = "./" + sheetNumber
+  val dir = new File(dirLocation)
+  dir.mkdir()
+
+  // init vars
+  var assignments: ListBuffer[String] = ListBuffer()
+
+  // adds an assignment
+  def addAssignment(number: String) = assignments += number
+
+  //writes assignments to disk
+  def write() = {
+    val contents = assignments.foldLeft("")((x, y) => x + "\\input{" + y + "}\n")
+    println(contents)
+    createFile(dirLocation, "/assignment" + sheetNumber + ".tex", createPreamble(sheetNumber, dueDate) + contents + endDocument)
+    assignments map (x => createFile(dirLocation, "/" + x + ".tex", "\\section*{Aufgabe " + x + "}"))
+  }
+
+  /**
+   * parses the config.xml settings into the preamble
+   */
+  def createPreamble(sheetNumber: String, dueDate: String) = {
+    import scala.xml._
+
+    //read xml
+    val conf = XML.load("config.xml")
+    val course = (conf \\ "course").text
+    val semester = (conf \\ "semester").text
+    val tutor = (conf \\ "tutor").text
+    val students = for (s <- conf \\ "students" \\ "student") yield s.text
+
+    // create the preamble
+    preamble(sheetNumber, dueDate, course, semester, tutor, students)
+  }
+
+  /**
+   * writes file to disk
+   */
+  def createFile(directory: String, fileName: String, content: String) {
+    val writer = new PrintWriter(new File(directory + fileName))
+    println("Writing  " + directory + fileName)
+    writer.write(content)
+    writer.close()
+  }
+}
