@@ -1,13 +1,12 @@
 import java.io.PrintWriter
 import java.io.File
 import scala.collection.mutable.ListBuffer
-
+ 
 /**
  * Sheet which can be constructed, from user input and config.xml
  *
  */
 class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
-
 
   // init vars
   var assignments: ListBuffer[String] = ListBuffer()
@@ -19,20 +18,19 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
 
   val sheet = createSheet
 
-  /** 
-    * creates the contents of the assignment sheet
-    */ 
+  /**
+   * creates the contents of the assignment sheet
+   */
   private def createSheet = {
-    val preamble = createPreamble(sheetNumber, dueDate)
+    val preamble = createPreamble
     val inputs = assignments.foldLeft("")((x, y) => x + "\\input{" + y + "}\n")
-    preamble.replace("#CONTENTS#", inputs)
+    preamble.replace("#CONTENT#", inputs)
   }
-
 
   /**
    * parses the config.xml settings into the preamble
    */
-  private def createPreamble(sheetNumber: String, dueDate: String) = {
+  private def createPreamble = {
     import scala.xml._
 
     //read xml
@@ -46,9 +44,9 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
     preamble(sheetNumber, dueDate, course, semester, tutor, students)
   }
 
-  /** 
-    * preamble skeleton
-    */ 
+  /**
+   * preamble skeleton
+   */
   private def preamble(sheetNumber: String, dueDate: String, courseName: String, semester: String, tutor: String, students: Seq[String]): String = {
 
     // read template
@@ -61,7 +59,7 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
     lines = lines.replace("#DUEDATE#", dueDate)
     lines = lines.replace("#COURSE#", courseName)
     lines = lines.replace("#SEMESTER#", semester)
-    lines = lines.replace("#ASSIGNMENT#", sheetNumber)
+    lines = lines.replace("#ASSIGNMENT#", sheetNumber + ". Übungszettel")
     lines = lines.replace("#STUDENTS#", students.mkString("\\\\"))
     lines
   }
@@ -76,7 +74,9 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
 
     // create sheet directory
     createFile(dirLocation, "/assignment" + sheetNumber + ".tex", sheet)
-    assignments map (x => createFile(dirLocation, "/exercise" + x + ".tex", "\\section*{Aufgabe " + x + "}"))
+    assignments map (
+      i => 
+        createFile(dirLocation, "/" + i + ".tex", "\\section*{Aufgabe " + i + "}"))
   }
 
   /**

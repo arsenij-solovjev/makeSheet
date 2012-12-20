@@ -150,5 +150,5 @@ class ParseParms(val help: String) {
         if( reqList.isEmpty && validList.isEmpty ) {// successful return
             (true,"",mergeParms( argsMap ))         // true, "", mergedParms
         } else (false,mkString(reqList,validList),Map[String,String]())
-    }
+    } 
 }
