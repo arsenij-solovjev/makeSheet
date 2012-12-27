@@ -1,11 +1,14 @@
 import java.io.PrintWriter
 import java.io.File
 import scala.collection.mutable.ListBuffer
- 
+import scala.xml.XML
+import org.rogach.scallop._
+
 /**
  * Sheet which can be constructed, from user input and config.xml
  *
  */
+
 class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
 
   // init vars
@@ -34,7 +37,7 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
     import scala.xml._
 
     //read xml
-    val conf = XML.load(getClass.getResource("config.xml"))
+    val conf = XML.load(".config.xml")
     val course = (conf \\ "course").text
     val semester = (conf \\ "semester").text
     val tutor = (conf \\ "tutor").text
@@ -76,7 +79,8 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
     createFile(dirLocation, "/assignment" + sheetNumber + ".tex", sheet)
     assignments map (
       i => 
-        createFile(dirLocation, "/" + i + ".tex", "\\section*{Aufgabe " + i + "}"))
+        createFile(dirLocation, "/" + i + ".tex", "\\section*{Aufgabe " + i + "}")
+    )
   }
 
   /**
@@ -91,13 +95,59 @@ class Sheet(sheetNumber: String, dueDate: String, exercises: Seq[String]) {
 }
 
 object Sheet {
-  def make(parameters: Map[String, String]) {
-    val sheetNumber = parameters("-n")
-    val dueDate = parameters("-d")
-    val exercises = parameters("-e").split(",")
+  def make(parameters: Map[String, ScallopOption[String]]) {
+    var sheetNumber, dueDate = ""
+    var exercises = Array[String]()
+    // this part sucks
+    for (parameter <- parameters){
+      parameter._1 match {
+        case "-n" => parameter._2.get match{
+          case None  => sheetNumber= promptParameter("-n", "What number is the assignment?")
+          case Some(x) => sheetNumber = x 
+        }
+        case "-d" => parameter._2.get match{
+          case None  => dueDate = promptParameter("-d", "What date is the assignment due?")
+          case Some(x) => dueDate = x 
+        } 
+        case "-e" => parameter._2.get match{
+          case None  => exercises= promptParameter("-e", "What exercises are on the assignment? (commma-separated)").split(",")
+          case Some(x) => exercises = x.split(",") 
+        } 
+        case _ => ;
+      }
+    }  
     // construct sheet
     val sheet = new Sheet(sheetNumber, dueDate, exercises)
     // print
     sheet.write
+    persistLastUsage(sheetNumber, dueDate, exercises.mkString(","))
+  }
+
+  private def promptParameter (parameter:String, message:String):String = {
+    val input = Console.readLine(message + "(default: " + (lastUsage(parameter))+ ")" )
+    input match{
+      case "" => lastUsage(parameter)
+      case x => x
+    }
+    
+  }
+  
+  private def lastUsage(parameter:String):String =  {
+    val lastUsage = XML.load(".lastUsage.xml")
+    parameter match {
+      case "-n" => (lastUsage \\ "sheetNumber").text
+      case "-d" => (lastUsage \\ "dueDate").text
+      case "-e" => (lastUsage \\ "exercises").text
+    } 
+  }
+  private def persistLastUsage(sheetNumber: String, dueDate:String, exercises:String){
+    val lastUsage = 
+<lastUsage>
+    <sheetNumber>{sheetNumber}</sheetNumber>
+    <dueDate>{dueDate}</dueDate>
+    <exercises>{exercises}</exercises>
+</lastUsage>
+
+   XML.saveFull(".lastUsage.xml", lastUsage, "UTF-8", true, null)
   }
 }
