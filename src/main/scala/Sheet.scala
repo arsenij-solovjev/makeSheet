@@ -123,15 +123,25 @@ object Sheet {
     persistLastUsage(sheetNumber, dueDate, exercises.mkString(","))
   }
 
+  /** 
+    * prompts the user for a parameter. if the user doesn't enter a value
+    * a default value is used
+    */ 
   private def promptParameter (parameter:String, message:String):String = {
-    val input = Console.readLine(message + "(default: " + (lastUsage(parameter))+ ")" )
+    // prompt for parameter
+    val input = Console.readLine(message + "(default: " + lastUsage(parameter)+ ")" )
+    // if user just typed enter choose the default case
+    // else take the provided value
     input match{
       case "" => lastUsage(parameter)
       case x => x
     }
     
   }
-  
+
+  /** 
+    * yields a parameter from the last usage
+    */ 
   private def lastUsage(parameter:String):String =  {
     val lastUsage = XML.load(".lastUsage.xml")
     parameter match {
@@ -140,6 +150,9 @@ object Sheet {
       case "-e" => (lastUsage \\ "exercises").text
     } 
   }
+/** 
+  * writes the last used parameters to a file, overwriting it after each usage
+  */ 
   private def persistLastUsage(sheetNumber: String, dueDate:String, exercises:String){
     val lastUsage = 
 <lastUsage>
