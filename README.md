@@ -28,15 +28,21 @@ of these.
 Following exemplary directory structure will be created
 
   .config.xml
+  
   .lastUsage.xml
+  
   1/
+  
   1/assignment1.tex
+  
   1/1.tex
+  
   1/2.tex
   
 assignment.tex will contain the LaTeX template and the lines
 
   \input{1}
+  
   \input{2}
 
 You can see the contents of the template at https://github.com/arsenij-solovjev/makeSheet/blob/master/src/main/resources/template.tex
