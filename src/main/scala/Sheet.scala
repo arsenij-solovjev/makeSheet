@@ -3,6 +3,8 @@ import java.io.File
 import scala.collection.mutable.ListBuffer
 import scala.xml.XML
 import org.rogach.scallop._
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 /**
  * Sheet which can be constructed, from user input and config.xml
@@ -145,22 +147,34 @@ object Sheet {
   private def lastUsage(parameter:String):String =  {
     val lastUsage = XML.load(".lastUsage.xml")
     parameter match {
-      case "-n" => (lastUsage \\ "sheetNumber").text
-      case "-d" => (lastUsage \\ "dueDate").text
+      case "-n" => {
+        val input = (lastUsage \\ "sheetNumber").text
+        (input.toInt + 1) + "" 
+      }
+      case "-d" => {
+        val date = new SimpleDateFormat("dd.MM").parse((lastUsage \\ "dueDate").text)
+        var cal = Calendar.getInstance();
+        cal.setTime(date); 
+        cal.add(Calendar.DAY_OF_MONTH, 7);  // number of days to add
+        val d = cal.get(Calendar.DAY_OF_MONTH) + "." + (cal.get(Calendar.MONTH)+1)
+        d 
+      }
       case "-e" => (lastUsage \\ "exercises").text
     } 
-  }
+  } 
 /** 
   * writes the last used parameters to a file, overwriting it after each usage
   */ 
   private def persistLastUsage(sheetNumber: String, dueDate:String, exercises:String){
     val lastUsage = 
-<lastUsage>
-    <sheetNumber>{sheetNumber}</sheetNumber>
+<lastUsage> 
+    <sheetNumber>{sheetNumber}</sheetNumber>  
     <dueDate>{dueDate}</dueDate>
-    <exercises>{exercises}</exercises>
-</lastUsage>
+    <exercises>{exercises}</exercises> 
+</lastUsage> 
 
-   XML.saveFull(".lastUsage.xml", lastUsage, "UTF-8", true, null)
+   XML.saveFull(".lastUsage.xml", lastUsage, "UTF-8", true, null) 
   }
 }
+ 
+ 
