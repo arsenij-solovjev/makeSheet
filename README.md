@@ -10,9 +10,9 @@ Usage
 
 Go to your terminal, enter the directory where you want to keep your assignments and type
   
-  ms
+  `ms`
 
-When run for the first time in a directory makeSheet will create a course configuration.
+When run for the first time in a directory makeSheet will create a *course configuration*.
 The second time it is run it will prompt you for the details of the assignment.
 You will need be prompted for the
 * assignment number
@@ -27,28 +27,22 @@ of these.
 
 Following exemplary directory structure will be created
 
-  .config.xml
-  
-  .lastUsage.xml
-  
-  1/
-  
-  1/assignment1.tex
-  
-  1/1.tex
-  
-  1/2.tex
+  * .config.xml
+  * .lastUsage.xml
+  * 1/
+  * 1/assignment1.tex
+  * 1/1.tex
+  * 1/2.tex`
   
 assignment.tex will contain the LaTeX template and the lines
 
-  \input{1}
-  
-  \input{2}
-
-You can see the contents of the template at https://github.com/arsenij-solovjev/makeSheet/blob/master/src/main/resources/template.tex
+  * `\input{1}`
+  * `\input{2}`
 
 This type of document layout is necessary if you want to edit an assignment which is under 
 Dropbox synchronization in order to avoid conflicts and overwriting!
+
+You can see the contents of the template at https://github.com/arsenij-solovjev/makeSheet/blob/master/src/main/resources/template.tex
 
 
 Requirements
@@ -63,9 +57,9 @@ Installation
 * Go to https://github.com/arsenij-solovjev/makeSheet/blob/master/bin/makesheet_2.9.2-0.9-one-jar.jar and click "View Raw"
 * Save in a directory that is on your path
 * Go to that directory and enter
-  chmod a+x makesheet_2.9.2-0.9-one-jar.jar
+  `chmod a+x makesheet_2.9.2-0.9-one-jar.jar`
 * Add the following line to your .bashrc
-  alias ms='makesheet_2.9.2-0.9-one-jar.jar'
+  `alias ms='makesheet_2.9.2-0.9-one-jar.jar'`
 
 TODOS
 =========
